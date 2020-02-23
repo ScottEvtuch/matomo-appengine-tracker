@@ -1,0 +1,5 @@
+{
+    "MATOMO_URL": "https://analytics.example.com/matomo.php",
+    "AUTH_TOKEN": "your_api_key",
+    "SITE_ID": 0
+}
