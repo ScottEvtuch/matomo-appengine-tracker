@@ -1,6 +1,7 @@
 import os
 import json
 import base64
+import re
 import requests
 
 # Read the configuration
@@ -12,7 +13,21 @@ def log_visit(event, context):
     # Decode the JSON event data
     event_string = base64.b64decode(event['data']).decode('utf-8')
     event_data = json.loads(event_string)
-    print(event_string)
+
+    # Check for excluded user agents
+    if any(re.match(user_agent,event_data['protoPayload'].get('userAgent','')) for user_agent in config['EXCLUDED_USER_AGENTS']):
+        print('excluded user agent: {}'.format(event_data['protoPayload'].get('userAgent','')))
+        return
+
+    # Check for excluded paths
+    if any(re.match(path,event_data['protoPayload']['resource']) for path in config['EXCLUDED_PATHS']):
+        print('excluded path: {}'.format(event_data['protoPayload']['resource']))
+        return
+    
+    # Check for static extensions
+    if any(re.match('.*\.{}(\?.*)?$'.format(extension),event_data['protoPayload']['resource']) for extension in config['STATIC_EXTENSIONS']):
+        print('excluded extension: {}'.format(event_data['protoPayload']['resource']))
+        return
 
     # Build the Matomo request
     url = config['MATOMO_URL']
@@ -28,7 +43,13 @@ def log_visit(event, context):
         'cip':event_data['protoPayload']['ip'],
     }
 
+    # Check for download extensions
+    if any(re.match('\.{}$'.format(extension),event_data['protoPayload']['resource']) for extension in config['DOWNLOAD_EXTENSIONS']):
+        params['download'] = params['url']
+
     # Send the Matomo API request
     response = requests.post(url, params=params)
-    print(response.status_code)
-    print(response.content)
+    if response.status_code == 204:
+        print('logged: {}'.format(event_data['protoPayload']['resource']))
+    else:
+        print('error: response code {}'.format(response.status_code))
