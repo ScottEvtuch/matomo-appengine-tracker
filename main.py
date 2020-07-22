@@ -32,6 +32,7 @@ def log_visit(event, context):
     # Build the Matomo request
     url = config['MATOMO_URL']
     params = {
+        'token_auth':config['AUTH_TOKEN'],
         'idsite':config['SITE_ID'],
         'rec':1,
         'apiv':1,
