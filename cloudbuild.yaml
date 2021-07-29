@@ -27,6 +27,14 @@ steps:
         logName="projects/$PROJECT_ID/logs/appengine.googleapis.com%2Frequest_log"
         protoPayload.status!=404
         protoPayload.status!=301'
+  - id: Grant Log Sink Pub/Sub Permissions
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - -c
+      - >
+        gcloud pubsub topics add-iam-policy-binding "appengine-request-log" --role roles/pubsub.publisher --member
+        $(gcloud logging sinks describe appengine-request-log --format "value(writerIdentity)")
   - id: Deploy to Cloud Functions
     name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "gcloud"
