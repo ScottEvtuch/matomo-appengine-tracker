@@ -35,7 +35,8 @@ steps:
       - deploy
       - "matomo_log_visit"
       - --runtime=python39
-      - --region=us-central1
+      - --memory=128MB
+      - --timeout=5s
       - --source=.
       - --trigger-topic=appengine-request-log
 timeout: "5m"
