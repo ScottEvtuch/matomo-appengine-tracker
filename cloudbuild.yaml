@@ -15,14 +15,14 @@ steps:
       - -c
       - >
         gcloud logging sinks create "appengine-request-log"
-        "pubsub.googleapis.com/projects/$PROJECT_ID/topics/request-log"
+        "pubsub.googleapis.com/projects/$PROJECT_ID/topics/appengine-request-log"
         --log-filter='resource.type="gae_app"
         logName="projects/$PROJECT_ID/logs/appengine.googleapis.com%2Frequest_log"
         protoPayload.status!=404
         protoPayload.status!=301'
         ||
         gcloud logging sinks update "appengine-request-log"
-        "pubsub.googleapis.com/projects/$PROJECT_ID/topics/request-log"
+        "pubsub.googleapis.com/projects/$PROJECT_ID/topics/appengine-request-log"
         --log-filter='resource.type="gae_app"
         logName="projects/$PROJECT_ID/logs/appengine.googleapis.com%2Frequest_log"
         protoPayload.status!=404
