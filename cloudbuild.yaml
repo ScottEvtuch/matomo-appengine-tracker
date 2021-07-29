@@ -1,0 +1,35 @@
+steps:
+  - id: Create Pub/Sub Topic
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - pubsub
+      - topics
+      - create
+      - "appengine-request-log"
+  - id: Create Log Sink
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - logging
+      - sinks
+      - create
+      - "appengine-request-log"
+      - "pubsub.googleapis.com/projects/$PROJECT_ID/topics/request-log"
+      - |
+        --log-filter='resource.type="gae_app"
+        logName="projects/$PROJECT_ID/logs/appengine.googleapis.com%2Frequest_log"
+        protoPayload.status!=404
+        protoPayload.status!=301'
+  - id: Deploy to Cloud Functions
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - functions
+      - deploy
+      - "matomo_log_visit"
+      - --runtime=python39
+      - --region=us-central1
+      - --source=.
+      - --trigger-topic=appengine-request-log
+timeout: "5m"

@@ -9,7 +9,7 @@ with open('config.json', 'r') as config_file:
     config_data = config_file.read()
 config = json.loads(config_data)
 
-def log_visit(event, context):
+def matomo_log_visit(event, context):
     # Decode the JSON event data
     event_string = base64.b64decode(event['data']).decode('utf-8')
     event_data = json.loads(event_string)
@@ -23,9 +23,9 @@ def log_visit(event, context):
     if any(re.match(path,event_data['protoPayload']['resource']) for path in config['EXCLUDED_PATHS']):
         print('excluded path: {}'.format(event_data['protoPayload']['resource']))
         return
-    
+
     # Check for static extensions
-    if any(re.match('.*\.{}(\?.*)?$'.format(extension),event_data['protoPayload']['resource']) for extension in config['STATIC_EXTENSIONS']):
+    if any(re.match(r'.*\.{}(\?.*)?$'.format(extension),event_data['protoPayload']['resource']) for extension in config['STATIC_EXTENSIONS']):
         print('excluded extension: {}'.format(event_data['protoPayload']['resource']))
         return
 
@@ -45,7 +45,7 @@ def log_visit(event, context):
     }
 
     # Check for download extensions
-    if any(re.match('\.{}$'.format(extension),event_data['protoPayload']['resource']) for extension in config['DOWNLOAD_EXTENSIONS']):
+    if any(re.match(r'\.{}$'.format(extension),event_data['protoPayload']['resource']) for extension in config['DOWNLOAD_EXTENSIONS']):
         params['download'] = params['url']
 
     # Send the Matomo API request
